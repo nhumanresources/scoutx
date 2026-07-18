@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f1223">
+<title>ScoutX — AI Recruitment & Marketing Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+<style>
+:root{
+  --bg:#f4f6fb; --surface:#ffffff; --ink:#0f1223; --ink-2:#5a6072; --ink-3:#9aa0b4;
+  --line:#e8eaf2; --line-2:#f0f2f8;
+  --blue:#2563eb; --blue-d:#1d4ed8; --blue-bg:#eff4ff;
+  --purple:#7c3aed; --purple-d:#6d28d9; --purple-bg:#f3efff;
+  --amber:#d97706; --amber-bg:#fef3c7;
+  --green:#16a34a; --green-bg:#e8f9ee; --red:#dc2626; --red-bg:#fdecec;
+  --wa:#25D366;
+  --side:#0f1223; --side-2:#171b33;
+  --r:14px; --r-sm:10px;
+  --sh:0 1px 3px rgba(15,18,35,.06),0 8px 24px rgba(15,18,35,.07);
+  --sh-lg:0 12px 40px rgba(15,18,35,.16);
+  --accent:var(--blue); --accent-d:var(--blue-d); --accent-bg:var(--blue-bg);
+}
+[data-role="marketing"]{--accent:var(--purple);--accent-d:var(--purple-d);--accent-bg:var(--purple-bg)}
+[data-role="admin"]{--accent:var(--amber);--accent-d:#b45309;--accent-bg:var(--amber-bg)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:inherit;font-size:13.5px;color:var(--ink);width:100%;padding:10px 13px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:#fff;outline:none;transition:border .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)}
+::placeholder{color:var(--ink-3)}
+.hidden{display:none!important}
+
+/* ═══════════ AUTH ═══════════ */
+#auth{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(1200px 700px at 75% -10%,#25317a 0%,#0f1223 55%),#0f1223;z-index:100;overflow:auto;padding:24px}
+#auth::before{content:"";position:absolute;inset:0;background:radial-gradient(600px 400px at 15% 110%,rgba(124,58,237,.28),transparent 65%);pointer-events:none}
+.auth-card{position:relative;width:400px;max-width:100%;background:rgba(255,255,255,.98);border-radius:22px;padding:38px 34px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.auth-logo{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+.auth-logo .mark{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 6px 16px rgba(64,70,220,.35)}
+.auth-logo .name{font-size:24px;font-weight:900;letter-spacing:-.7px}
+.auth-sub{color:var(--ink-2);font-size:12.5px;margin-bottom:26px}
+.auth-field{margin-bottom:14px}
+.auth-field label{display:block;font-size:11px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.auth-btn{width:100%;padding:13px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#6d28d9);color:#fff;font-size:14.5px;font-weight:700;letter-spacing:.2px;transition:transform .12s,box-shadow .12s;box-shadow:0 8px 20px rgba(64,70,220,.35)}
+.auth-btn:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(64,70,220,.45)}
+.auth-alt{margin-top:16px;text-align:center;font-size:12.5px;color:var(--ink-2)}
+.auth-alt a{color:var(--blue);font-weight:600;cursor:pointer;text-decoration:none}
+.auth-err{background:var(--red-bg);color:var(--red);border-radius:10px;padding:9px 13px;font-size:12.5px;font-weight:600;margin-bottom:14px;display:none}
+.role-choice{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.role-choice .rc{padding:13px 8px;border:2px solid var(--line);border-radius:12px;text-align:center;cursor:pointer;transition:all .13s;background:#fff}
+.role-choice .rc .ic{font-size:21px}
+.role-choice .rc .t{font-size:12px;font-weight:700;margin-top:5px}
+.role-choice .rc .d{font-size:10px;color:var(--ink-3);margin-top:2px}
+.role-choice .rc.sel-recruiter{border-color:var(--blue);background:var(--blue-bg)}
+.role-choice .rc.sel-marketing{border-color:var(--purple);background:var(--purple-bg)}
+
+/* ═══════════ SHELL ═══════════ */
+#app{display:none;height:100vh}
+#app.on{display:flex}
+.sidebar{width:232px;flex-shrink:0;background:linear-gradient(180deg,var(--side) 0%,var(--side-2) 100%);display:flex;flex-direction:column;overflow-y:auto}
+.sb-brand{display:flex;align-items:center;gap:10px;padding:20px 18px 14px}
+.sb-brand .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px}
+.sb-brand .nm{color:#fff;font-weight:900;font-size:16.5px;letter-spacing:-.4px}
+.sb-brand .md{font-size:9.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-3)}
+.sb-role-chip{margin:0 16px 14px;padding:7px 12px;border-radius:9px;font-size:10.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;text-align:center}
+.sb-role-chip.recruiter{background:rgba(37,99,235,.22);color:#7fabff}
+.sb-role-chip.marketing{background:rgba(124,58,237,.24);color:#b79aff}
+.sb-role-chip.admin{background:rgba(217,119,6,.22);color:#ffc266}
+.nav-label{font-size:9.5px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:rgba(255,255,255,.28);padding:12px 20px 5px}
+.nav-item{display:flex;align-items:center;gap:11px;margin:1px 10px;padding:9px 12px;border-radius:10px;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;cursor:pointer;transition:all .12s;border-left:none}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-item.active{background:color-mix(in srgb,var(--accent) 26%,transparent);color:#fff;font-weight:600}
+.nav-item .ni{width:20px;text-align:center;font-size:15px}
+.nav-item .nb{margin-left:auto;background:rgba(255,255,255,.14);color:#fff;font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:9px}
+.nav-item.active .nb{background:var(--accent)}
+.sb-foot{margin-top:auto;padding:14px 16px;border-top:1px solid rgba(255,255,255,.07)}
+.sb-user{display:flex;align-items:center;gap:10px}
+.sb-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.sb-uname{color:#fff;font-size:12.5px;font-weight:600;line-height:1.2}
+.sb-umail{color:rgba(255,255,255,.4);font-size:10.5px}
+.sb-logout{margin-left:auto;color:rgba(255,255,255,.45);font-size:15px;padding:5px;border-radius:7px}
+.sb-logout:hover{background:rgba(255,255,255,.1);color:#fff}
+.admin-switch{display:flex;gap:5px;margin:0 16px 10px}
+.admin-switch button{flex:1;padding:6px 4px;border-radius:8px;font-size:10px;font-weight:700;background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);transition:all .12s}
+.admin-switch button.on-r{background:var(--blue);color:#fff}
+.admin-switch button.on-m{background:var(--purple);color:#fff}
+.admin-switch button.on-a{background:var(--amber);color:#fff}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{display:flex;align-items:center;gap:14px;padding:15px 26px;background:var(--surface);border-bottom:1px solid var(--line)}
+.tb-title{font-size:17px;font-weight:800;letter-spacing:-.3px}
+.tb-sub{font-size:11.5px;color:var(--ink-3);margin-top:1px}
+.tb-actions{margin-left:auto;display:flex;gap:9px;align-items:center}
+.content{flex:1;overflow-y:auto;padding:24px 26px}
+
+/* ═══════════ COMPONENTS ═══════════ */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:var(--r-sm);font-size:13px;font-weight:600;transition:all .13s;white-space:nowrap}
+.btn-pri{background:var(--accent);color:#fff;box-shadow:0 3px 10px color-mix(in srgb,var(--accent) 35%,transparent)}
+.btn-pri:hover{background:var(--accent-d);transform:translateY(-1px)}
+.btn-sec{background:#fff;color:var(--ink-2);border:1.5px solid var(--line)}
+.btn-sec:hover{border-color:var(--ink-3);color:var(--ink)}
+.btn-danger{background:var(--red-bg);color:var(--red)}
+.btn-wa{background:var(--wa);color:#fff}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:8px}
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--sh);padding:20px}
+.grid-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px}
+.stat{background:var(--surface);border-radius:var(--r);box-shadow:var(--sh);padding:17px 18px;position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent)}
+.stat .k{font-size:26px;font-weight:900;letter-spacing:-.8px}
+.stat .l{font-size:11.5px;color:var(--ink-2);font-weight:600;margin-top:2px}
+.stat .d{font-size:10.5px;color:var(--green);font-weight:600;margin-top:5px}
+.tag{display:inline-block;padding:2.5px 9px;border-radius:20px;font-size:10.5px;font-weight:700}
+.tag-blue{background:var(--blue-bg);color:var(--blue)} .tag-purple{background:var(--purple-bg);color:var(--purple)}
+.tag-green{background:var(--green-bg);color:var(--green)} .tag-amber{background:var(--amber-bg);color:var(--amber)}
+.tag-red{background:var(--red-bg);color:var(--red)} .tag-gray{background:var(--line-2);color:var(--ink-2)}
+table.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-3);padding:10px 12px;border-bottom:1.5px solid var(--line)}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--line-2);font-size:13px}
+.tbl tr:hover td{background:#fafbfe}
+.empty{text-align:center;padding:46px 20px;color:var(--ink-3)}
+.empty .ei{font-size:38px;margin-bottom:10px}
+.empty .et{font-size:14px;font-weight:600;color:var(--ink-2)}
+.empty .ed{font-size:12px;margin-top:4px}
+
+/* Kanban */
+.kanban{display:flex;gap:13px;overflow-x:auto;padding-bottom:10px;align-items:flex-start}
+.kb-col{min-width:198px;width:198px;flex-shrink:0;background:#eef0f7;border-radius:var(--r);padding:11px}
+.kb-head{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-2);padding:2px 4px 9px}
+.kb-dot{width:8px;height:8px;border-radius:50%}
+.kb-count{margin-left:auto;background:#fff;border-radius:9px;padding:1px 7px;font-size:10px;color:var(--ink-3)}
+.kb-card{background:#fff;border-radius:11px;padding:11px 12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(15,18,35,.08);cursor:grab;transition:box-shadow .13s,transform .13s}
+.kb-card:hover{box-shadow:0 4px 14px rgba(15,18,35,.14);transform:translateY(-1px)}
+.kb-card.dragging{opacity:.45}
+.kb-col.dragover{background:#e2e6f2;outline:2px dashed var(--accent)}
+.kbc-name{font-size:12.5px;font-weight:700}
+.kbc-sub{font-size:10.5px;color:var(--ink-3);margin-top:2px}
+.kbc-foot{display:flex;align-items:center;gap:6px;margin-top:8px}
+.score{font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px}
+.score-hi{background:var(--green-bg);color:var(--green)} .score-md{background:var(--amber-bg);color:var(--amber)} .score-lo{background:var(--red-bg);color:var(--red)}
+
+/* Chat / two-panel */
+.two-panel{display:flex;height:calc(100vh - 205px);min-height:420px;background:var(--surface);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.tp-list{width:270px;flex-shrink:0;border-right:1px solid var(--line);overflow-y:auto}
+.tp-item{padding:13px 16px;border-bottom:1px solid var(--line-2);cursor:pointer;transition:background .1s}
+.tp-item:hover{background:#fafbfe}
+.tp-item.sel{background:var(--accent-bg);border-left:3px solid var(--accent)}
+.tp-name{font-size:13px;font-weight:700}
+.tp-sub{font-size:11px;color:var(--ink-3);margin-top:2px}
+.tp-main{flex:1;display:flex;flex-direction:column}
+.chat-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.chat-body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:4px;background:#f8f9fd}
+.msg{max-width:72%;padding:9px 13px;border-radius:14px;font-size:13px;line-height:1.45;word-wrap:break-word}
+.msg-out{background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.msg-in{background:#fff;color:var(--ink);align-self:flex-start;border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg-meta{font-size:9.5px;color:var(--ink-3);margin:2px 4px 8px}
+.msg-meta.out{align-self:flex-end}
+.chat-send{display:flex;gap:9px;padding:12px 16px;border-top:1px solid var(--line);background:#fff}
+.chat-send input{border-radius:22px}
+.chat-send button{width:40px;height:40px;flex-shrink:0;border-radius:50%;background:var(--wa);color:#fff;font-size:16px}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(15,18,35,.5);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
+.modal-bg.on{display:flex}
+.modal{background:#fff;border-radius:18px;box-shadow:var(--sh-lg);width:480px;max-width:100%;max-height:88vh;overflow-y:auto;padding:26px}
+.modal h3{font-size:16.5px;font-weight:800;margin-bottom:16px}
+.m-field{margin-bottom:13px}
+.m-field label{display:block;font-size:11px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.m-foot{display:flex;gap:9px;justify-content:flex-end;margin-top:20px}
+
+/* Toast */
+#toasts{position:fixed;bottom:22px;right:22px;z-index:90;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--ink);color:#fff;padding:11px 17px;border-radius:11px;font-size:13px;font-weight:600;box-shadow:var(--sh-lg);animation:tin .25s ease}
+.toast.err{background:var(--red)} .toast.ok{background:var(--green)}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* Toggle pills */
+.seg{display:inline-flex;background:var(--line-2);border-radius:10px;padding:3px;gap:2px}
+.seg button{padding:6.5px 15px;border-radius:8px;font-size:12px;font-weight:600;color:var(--ink-2)}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(15,18,35,.12)}
+.section-title{font-size:14.5px;font-weight:800;margin:22px 0 12px;letter-spacing:-.2px}
+.hint{font-size:11.5px;color:var(--ink-3)}
+.pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);animation:pl 1.4s infinite}
+@keyframes pl{0%,100%{opacity:1}50%{opacity:.35}}
+@media (max-width:860px){.sidebar{width:64px}.sb-brand .nm,.sb-brand .md,.nav-item span:not(.ni),.nav-label,.sb-role-chip,.sb-uname,.sb-umail,.nav-item .nb{display:none}.nav-item{justify-content:center}}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ AUTH SCREEN ═══════════ -->
+<div id="auth">
+  <div class="auth-card">
+    <div class="auth-logo"><div class="mark">🎯</div><div><div class="name">ScoutX</div></div></div>
+    <div class="auth-sub">AI Recruitment & Marketing Platform · nhrms.com</div>
+    <div class="auth-err" id="auth-err"></div>
+    <div id="auth-login">
+      <div class="auth-field"><label>Email</label><input id="li-email" type="email" placeholder="you@nhrms.com"></div>
+      <div class="auth-field"><label>Password</label><input id="li-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="auth-btn" onclick="doLogin()">Sign In →</button>
+      <div class="auth-alt">New team member? <a onclick="authMode('signup')">Create account</a></div>
+    </div>
+    <div id="auth-setup" class="hidden">
+      <div style="background:var(--amber-bg);color:#92400e;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:600;margin-bottom:16px">👑 First run — create the Admin account</div>
+      <div class="auth-field"><label>Your Name</label><input id="su-name" placeholder="Sai Krishna"></div>
+      <div class="auth-field"><label>Email</label><input id="su-email" type="email" placeholder="krishna@nhrms.com"></div>
+      <div class="auth-field"><label>Password</label><input id="su-pass" type="password" placeholder="Min 6 characters"></div>
+      <button class="auth-btn" onclick="doSetupAdmin()">Create Admin Account →</button>
+    </div>
+    <div id="auth-signup" class="hidden">
+      <div class="auth-field"><label>Your Name</label><input id="sg-name" placeholder="Full name"></div>
+      <div class="auth-field"><label>Email</label><input id="sg-email" type="email" placeholder="you@nhrms.com"></div>
+      <div class="auth-field"><label>Password</label><input id="sg-pass" type="password" placeholder="Min 6 characters"></div>
+      <div class="auth-field"><label>Your Role</label>
+        <div class="role-choice">
+          <div class="rc" id="rc-recruiter" onclick="pickRole('recruiter')"><div class="ic">👤</div><div class="t">Recruiter</div><div class="d">Jobs & candidates</div></div>
+          <div class="rc" id="rc-marketing" onclick="pickRole('marketing')"><div class="ic">📣</div><div class="t">Marketing</div><div class="d">Leads & campaigns</div></div>
+        </div>
+      </div>
+      <div class="hint" style="margin-bottom:12px">⏳ Account needs Admin approval before you can sign in.</div>
+      <button class="auth-btn" onclick="doSignup()">Request Account →</button>
+      <div class="auth-alt">Already have an account? <a onclick="authMode('login')">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ APP SHELL ═══════════ -->
+<div id="app">
+  <div class="sidebar">
+    <div class="sb-brand"><div class="mark">🎯</div><div><div class="nm">ScoutX</div><div class="md" id="sb-mode">RECRUIT</div></div></div>
+    <div class="sb-role-chip" id="sb-role-chip">Recruiter</div>
+    <div class="admin-switch hidden" id="admin-switch">
+      <button id="asw-a" onclick="adminView('admin')">👑 Admin</button>
+      <button id="asw-r" onclick="adminView('recruiter')">👤 Recruit</button>
+      <button id="asw-m" onclick="adminView('marketing')">📣 Market</button>
+    </div>
+    <div id="sb-nav"></div>
+    <div class="sb-foot">
+      <div class="sb-user">
+        <div class="sb-avatar" id="sb-avatar">S</div>
+        <div><div class="sb-uname" id="sb-uname">—</div><div class="sb-umail" id="sb-umail">—</div></div>
+        <button class="sb-logout" onclick="doLogout()" title="Sign out">⎋</button>
+      </div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div><div class="tb-title" id="tb-title">Dashboard</div><div class="tb-sub" id="tb-sub"></div></div>
+      <div class="tb-actions" id="tb-actions"></div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal" id="modal-box"></div></div>
+<div id="toasts"></div>
+
+<script>
+/* ═══════════ CORE STATE ═══════════ */
+const LS = { users:'sx_users', session:'sx_session', cfg:'sx_cfg', recruit:'sx_recruit', mkt:'sx_mkt' };
+const load = (k,d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch(e){ return d; } };
+const save = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+let users   = load(LS.users, []);
+let session = load(LS.session, null);
+let cfg     = load(LS.cfg, { greenId:'', greenToken:'', claudeKey:'', scriptUrl:'', recruitSheetId:'', mktSheetId:'' });
+let R = load(LS.recruit, { jobs:[], candidates:[], convs:{} });
+let M = load(LS.mkt, { leads:[], campaigns:[], templates:[
+  { id:1, name:'Intro — HR Heads', body:'Hi {name} 👋, I\'m {sender} from NHRMS. We help HR teams automate recruitment with AI — cutting hiring time by 60%. Would you be open to a quick 15-min demo this week?' },
+  { id:2, name:'Follow-up', body:'Hi {name}, just following up on my earlier message. Happy to share a quick case study of how we helped a company like {company}. Any interest?' }
+], inbox:{} });
+
+const saveR = () => { save(LS.recruit, R); queueSync('recruit'); };
+const saveM = () => { save(LS.mkt, M); queueSync('marketing'); };
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const firstName = n => (n||'there').trim().split(/\s+/)[0];
+const fmtDate = t => t ? new Date(t).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '—';
+const fmtTime = t => t ? new Date(t).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+function toast(msg, type){ const t=document.createElement('div'); t.className='toast '+(type||''); t.textContent=msg; document.getElementById('toasts').appendChild(t); setTimeout(()=>t.remove(), 3200); }
+async function sha(s){ const b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+
+/* ═══════════ AUTH ═══════════ */
+function authMode(m){
+  document.getElementById('auth-err').style.display='none';
+  ['login','setup','signup'].forEach(x => document.getElementById('auth-'+x).classList.toggle('hidden', x!==m));
+}
+function authErr(m){ const e=document.getElementById('auth-err'); e.textContent=m; e.style.display='block'; }
+let _pickedRole = null;
+function pickRole(r){ _pickedRole=r;
+  document.getElementById('rc-recruiter').className='rc'+(r==='recruiter'?' sel-recruiter':'');
+  document.getElementById('rc-marketing').className='rc'+(r==='marketing'?' sel-marketing':'');
+}
+async function doSetupAdmin(){
+  const name=document.getElementById('su-name').value.trim(), email=document.getElementById('su-email').value.trim().toLowerCase(), pass=document.getElementById('su-pass').value;
+  if(!name||!email||pass.length<6) return authErr('Fill all fields — password min 6 chars.');
+  users.push({ name, email, hash:await sha(pass), role:'admin', approved:true, created:Date.now() });
+  save(LS.users, users);
+  session={ email, role:'admin', name }; save(LS.session, session);
+  toast('Welcome, '+firstName(name)+'! 👑','ok'); enterApp();
+}
+async function doSignup(){
+  const name=document.getElementById('sg-name').value.trim(), email=document.getElementById('sg-email').value.trim().toLowerCase(), pass=document.getElementById('sg-pass').value;
+  if(!name||!email||pass.length<6||!_pickedRole) return authErr('Fill all fields, pick a role — password min 6 chars.');
+  if(users.find(u=>u.email===email)) return authErr('Account already exists for this email.');
+  users.push({ name, email, hash:await sha(pass), role:_pickedRole, approved:false, created:Date.now() });
+  save(LS.users, users);
+  authMode('login'); toast('Request sent — ask your Admin to approve it.','ok');
+}
+async function doLogin(){
+  const email=document.getElementById('li-email').value.trim().toLowerCase(), pass=document.getElementById('li-pass').value;
+  const u=users.find(x=>x.email===email);
+  if(!u || u.hash!==await sha(pass)) return authErr('Wrong email or password.');
+  if(!u.approved) return authErr('Account pending Admin approval.');
+  session={ email:u.email, role:u.role, name:u.name }; save(LS.session, session);
+  enterApp();
+}
+function doLogout(){ localStorage.removeItem(LS.session); session=null; location.reload(); }
+
+/* ═══════════ ROLE ROUTING ═══════════ */
+let viewRole='recruiter';   // what module is being displayed
+let curView='dashboard';
+function enterApp(){
+  document.getElementById('auth').style.display='none';
+  document.getElementById('app').classList.add('on');
+  const u=session;
+  document.getElementById('sb-uname').textContent=u.name;
+  document.getElementById('sb-umail').textContent=u.email;
+  document.getElementById('sb-avatar').textContent=(u.name||'?')[0].toUpperCase();
+  if(u.role==='admin'){ document.getElementById('admin-switch').classList.remove('hidden'); adminView('admin'); }
+  else { viewRole=u.role; applyRole(); nav('dashboard'); }
+}
+function adminView(v){
+  viewRole=v; applyRole();
+  ['a','r','m'].forEach(x=>document.getElementById('asw-'+x).className='');
+  if(v==='admin') document.getElementById('asw-a').className='on-a';
+  if(v==='recruiter') document.getElementById('asw-r').className='on-r';
+  if(v==='marketing') document.getElementById('asw-m').className='on-m';
+  nav(v==='admin' ? 'overview' : 'dashboard');
+}
+function applyRole(){
+  document.body.dataset.role=viewRole;
+  const chip=document.getElementById('sb-role-chip');
+  chip.className='sb-role-chip '+viewRole;
+  chip.textContent = viewRole==='admin'?'👑 Admin': viewRole==='recruiter'?'👤 Recruiter':'📣 Marketing';
+  document.getElementById('sb-mode').textContent = viewRole==='admin'?'CONTROL': viewRole==='recruiter'?'RECRUIT':'MARKET';
+  buildNav();
+}
+const NAVS = {
+  recruiter: [
+    { l:'Pipeline' },
+    { v:'dashboard', i:'🏠', t:'Dashboard' },
+    { v:'jobs', i:'📋', t:'Jobs', b:()=>R.jobs.filter(j=>j.status!=='Closed').length },
+    { v:'candidates', i:'👥', t:'Candidates', b:()=>R.candidates.length },
+    { v:'screener', i:'🤖', t:'AI Screener' },
+    { l:'Outreach' },
+    { v:'outreach', i:'💬', t:'WhatsApp' },
+    { v:'contacted', i:'📬', t:'Contacted', b:()=>R.candidates.filter(c=>c.waSent).length },
+    { l:'Insights' },
+    { v:'analytics', i:'📊', t:'Analytics' },
+    { v:'settings', i:'⚙️', t:'Settings' },
+  ],
+  marketing: [
+    { l:'Contacts' },
+    { v:'dashboard', i:'🏠', t:'Dashboard' },
+    { v:'leads', i:'🎯', t:'Leads', b:()=>M.leads.length },
+    { l:'Campaigns' },
+    { v:'campaigns', i:'📣', t:'Campaigns', b:()=>M.campaigns.filter(c=>c.status==='Active').length },
+    { v:'templates', i:'✍️', t:'Templates' },
+    { v:'inbox', i:'💬', t:'Inbox', b:()=>Object.keys(M.inbox).length },
+    { l:'Insights' },
+    { v:'mkanalytics', i:'📊', t:'Analytics' },
+    { v:'settings', i:'⚙️', t:'Settings' },
+  ],
+  admin: [
+    { l:'Control' },
+    { v:'overview', i:'👑', t:'Overview' },
+    { v:'team', i:'👥', t:'Team', b:()=>users.filter(u=>!u.approved).length||'' },
+    { v:'masteranalytics', i:'📊', t:'Master Analytics' },
+    { l:'System' },
+    { v:'settings', i:'⚙️', t:'Settings' },
+  ]
+};
+function buildNav(){
+  const el=document.getElementById('sb-nav');
+  el.innerHTML=(NAVS[viewRole]||[]).map(n => n.l
+    ? `<div class="nav-label">${n.l}</div>`
+    : `<div class="nav-item${n.v===curView?' active':''}" onclick="nav('${n.v}')"><span class="ni">${n.i}</span><span>${n.t}</span>${n.b&&n.b()?`<span class="nb">${n.b()}</span>`:''}</div>`
+  ).join('');
+}
+function nav(v){
+  curView=v; buildNav();
+  const V=VIEWS[viewRole+'.'+v]||VIEWS[v];
+  if(V) V();
+}
+function setHead(title, sub, actions){
+  document.getElementById('tb-title').textContent=title;
+  document.getElementById('tb-sub').textContent=sub||'';
+  document.getElementById('tb-actions').innerHTML=actions||'';
+}
+function C(html){ document.getElementById('content').innerHTML=html; }
+function openModal(html){ document.getElementById('modal-box').innerHTML=html; document.getElementById('modal-bg').classList.add('on'); }
+function closeModal(){ document.getElementById('modal-bg').classList.remove('on'); }
+
+const VIEWS = {}; // populated per module below
+
+/* ═══════════ RECRUITER MODULE ═══════════ */
+const STAGES=[
+  { k:'sourced', t:'Sourced', c:'#94a3b8' },
+  { k:'screened', t:'Screened', c:'#38bdf8' },
+  { k:'shortlisted', t:'Shortlisted', c:'#16a34a' },
+  { k:'messaged', t:'WA Sent', c:'#7c3aed' },
+  { k:'interview', t:'Interview', c:'#d97706' },
+  { k:'placed', t:'Placed', c:'#2563eb' },
+];
+const scoreCls = s => s>=80?'score-hi':s>=60?'score-md':'score-lo';
+
+VIEWS['recruiter.dashboard']=()=>{
+  setHead('Pipeline Dashboard','Live snapshot of your recruiting funnel',
+    `<button class="btn btn-sec btn-sm" onclick="nav('screener')">🤖 Screen CVs</button>
+     <button class="btn btn-pri btn-sm" onclick="candModal()">+ Add Candidate</button>`);
+  const cs=R.candidates, sent=cs.filter(c=>c.waSent).length, replied=cs.filter(c=>(R.convs[c.id]||[]).some(m=>m.role==='user')).length;
+  C(`<div class="grid-stats">
+      <div class="stat"><div class="k">${cs.length}</div><div class="l">Total Candidates</div></div>
+      <div class="stat"><div class="k">${cs.filter(c=>c.stage==='shortlisted').length}</div><div class="l">Shortlisted</div></div>
+      <div class="stat"><div class="k">${sent}</div><div class="l">WA Contacted</div><div class="d">${replied} replied</div></div>
+      <div class="stat"><div class="k">${cs.filter(c=>c.stage==='interview').length}</div><div class="l">Interviews</div></div>
+      <div class="stat"><div class="k">${cs.filter(c=>c.stage==='placed').length}</div><div class="l">Placed</div></div>
+    </div>
+    <div class="section-title">Pipeline Board ${R.jobs.length?`— ${esc((R.jobs.find(j=>j.id===R.activeJob)||R.jobs[0]).title)}`:''}</div>
+    ${renderKanban()}`);
+};
+
+function renderKanban(){
+  const jobId = R.activeJob || (R.jobs[0]&&R.jobs[0].id);
+  const cs = R.candidates.filter(c=>!jobId || c.jobId===jobId || !c.jobId);
+  if(!cs.length) return `<div class="card empty"><div class="ei">🗂️</div><div class="et">No candidates yet</div><div class="ed">Add candidates or import a CSV to see the board.</div></div>`;
+  return `<div class="kanban">${STAGES.map(s=>{
+    const list=cs.filter(c=>(c.stage||'sourced')===s.k);
+    return `<div class="kb-col" data-stage="${s.k}" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="kbDrop(event,'${s.k}')">
+      <div class="kb-head"><span class="kb-dot" style="background:${s.c}"></span>${s.t}<span class="kb-count">${list.length}</span></div>
+      ${list.map(c=>`<div class="kb-card" draggable="true" ondragstart="kbDrag(event,${c.id})" onclick="candDetail(${c.id})">
+        <div class="kbc-name">${esc(c.name)}</div>
+        <div class="kbc-sub">${esc(c.role||c.phone||'')}</div>
+        <div class="kbc-foot">${c.score?`<span class="score ${scoreCls(c.score)}">${c.score}</span>`:''}${c.waSent?'<span class="tag tag-purple" style="font-size:9px">💬 sent</span>':''}</div>
+      </div>`).join('')}
+    </div>`;}).join('')}</div>`;
+}
+let _dragId=null;
+function kbDrag(e,id){ _dragId=id; e.target.classList.add('dragging'); }
+function kbDrop(e,stage){ e.preventDefault();
+  const c=R.candidates.find(x=>x.id===_dragId); if(!c) return;
+  c.stage=stage; saveR(); nav(curView); toast(`${firstName(c.name)} → ${STAGES.find(s=>s.k===stage).t}`,'ok');
+}
+
+VIEWS['recruiter.jobs']=()=>{
+  setHead('Jobs','Open roles and their pipelines',`<button class="btn btn-pri btn-sm" onclick="jobModal()">+ New Job</button>`);
+  if(!R.jobs.length) return C(`<div class="card empty"><div class="ei">📋</div><div class="et">No jobs yet</div><div class="ed">Create your first job opening to start recruiting.</div></div>`);
+  C(`<div class="card" style="padding:6px 16px"><table class="tbl"><thead><tr><th>Title</th><th>Candidates</th><th>Shortlisted</th><th>Status</th><th>Created</th><th></th></tr></thead><tbody>
+    ${R.jobs.map(j=>{const cs=R.candidates.filter(c=>c.jobId===j.id);return `<tr>
+      <td style="font-weight:700">${esc(j.title)}</td>
+      <td>${cs.length}</td><td>${cs.filter(c=>c.stage==='shortlisted').length}</td>
+      <td><span class="tag ${j.status==='Open'?'tag-green':'tag-gray'}">${j.status}</span></td>
+      <td class="hint">${fmtDate(j.created)}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn btn-sec btn-sm" onclick="R.activeJob=${j.id};save(LS.recruit,R);nav('dashboard')">View Board</button>
+        <button class="btn btn-sec btn-sm" onclick="jobToggle(${j.id})">${j.status==='Open'?'Close':'Reopen'}</button>
+        <button class="btn btn-danger btn-sm" onclick="jobDelete(${j.id})">🗑</button></td></tr>`;}).join('')}
+  </tbody></table></div>`);
+};
+function jobModal(){ openModal(`<h3>📋 New Job</h3>
+  <div class="m-field"><label>Job Title</label><input id="jm-title" placeholder="e.g. Product Manager"></div>
+  <div class="m-field"><label>Job Description (used by AI Screener)</label><textarea id="jm-jd" rows="6" placeholder="Paste JD here..."></textarea></div>
+  <div class="m-foot"><button class="btn btn-sec" onclick="closeModal()">Cancel</button><button class="btn btn-pri" onclick="jobSave()">Create Job</button></div>`); }
+function jobSave(){ const t=document.getElementById('jm-title').value.trim(); if(!t) return toast('Title required','err');
+  R.jobs.push({ id:Date.now(), title:t, jd:document.getElementById('jm-jd').value, status:'Open', created:Date.now() });
+  saveR(); closeModal(); nav('jobs'); toast('Job created','ok'); }
+function jobToggle(id){ const j=R.jobs.find(x=>x.id===id); j.status=j.status==='Open'?'Closed':'Open'; saveR(); nav('jobs'); }
+function jobDelete(id){ if(!confirm('Delete job and unlink its candidates?')) return;
+  R.jobs=R.jobs.filter(x=>x.id!==id); R.candidates.forEach(c=>{if(c.jobId===id)c.jobId=null}); saveR(); nav('jobs'); toast('Job deleted','ok'); }
+
+VIEWS['recruiter.candidates']=()=>{
+  setHead('Candidates','All candidates across jobs',
+    `<button class="btn btn-sec btn-sm" onclick="csvImportModal('recruit')">📤 Import CSV</button>
+     <button class="btn btn-pri btn-sm" onclick="candModal()">+ Add Manually</button>`);
+  if(!R.candidates.length) return C(`<div class="card empty"><div class="ei">👥</div><div class="et">No candidates yet</div><div class="ed">Import a CSV or add manually to get started.</div></div>`);
+  C(`<div class="card" style="padding:6px 16px"><table class="tbl"><thead><tr><th>Name</th><th>Phone</th><th>Role</th><th>Score</th><th>Stage</th><th>Job</th><th></th></tr></thead><tbody>
+    ${R.candidates.map(c=>`<tr>
+      <td style="font-weight:700;cursor:pointer" onclick="candDetail(${c.id})">${esc(c.name)}</td>
+      <td class="hint">${esc(c.phone||'—')}</td><td>${esc(c.role||'—')}</td>
+      <td>${c.score?`<span class="score ${scoreCls(c.score)}">${c.score}</span>`:'—'}</td>
+      <td><span class="tag tag-blue">${(STAGES.find(s=>s.k===(c.stage||'sourced'))||{}).t}</span></td>
+      <td class="hint">${esc((R.jobs.find(j=>j.id===c.jobId)||{}).title||'—')}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn btn-wa btn-sm" onclick="waModal(${c.id})">💬</button>
+        <button class="btn btn-danger btn-sm" onclick="candDelete(${c.id})">🗑</button></td></tr>`).join('')}
+  </tbody></table></div>`);
+};
+function candModal(){ openModal(`<h3>👤 Add Candidate</h3>
+  <div class="m-field"><label>Name</label><input id="cm-name" placeholder="Full name"></div>
+  <div class="m-field"><label>Phone (with country code)</label><input id="cm-phone" placeholder="+91 98xxxxxxx"></div>
+  <div class="m-field"><label>Role / Title</label><input id="cm-role" placeholder="e.g. Sr. PM"></div>
+  <div class="m-field"><label>Job</label><select id="cm-job"><option value="">— none —</option>${R.jobs.map(j=>`<option value="${j.id}">${esc(j.title)}</option>`).join('')}</select></div>
+  <div class="m-field"><label>CV / Notes (optional, for AI screening)</label><textarea id="cm-cv" rows="4"></textarea></div>
+  <div class="m-foot"><button class="btn btn-sec" onclick="closeModal()">Cancel</button><button class="btn btn-pri" onclick="candSave()">Add</button></div>`); }
+function candSave(){ const n=document.getElementById('cm-name').value.trim(); if(!n) return toast('Name required','err');
+  R.candidates.push({ id:Date.now(), name:n, phone:document.getElementById('cm-phone').value.trim(), role:document.getElementById('cm-role').value.trim(),
+    jobId:+document.getElementById('cm-job').value||null, cv:document.getElementById('cm-cv').value, stage:'sourced', score:null, waSent:false, added:Date.now() });
+  saveR(); closeModal(); nav(curView); toast('Candidate added','ok'); }
+function candDelete(id){ id=+id; if(!confirm('Delete this candidate?')) return;
+  R.candidates=R.candidates.filter(c=>c.id!==id); delete R.convs[id]; saveR(); nav(curView); toast('Deleted','ok'); }
+function candDetail(id){ const c=R.candidates.find(x=>x.id===+id); if(!c) return;
+  openModal(`<h3>${esc(c.name)}</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+    <div><div class="hint">Phone</div><b>${esc(c.phone||'—')}</b></div>
+    <div><div class="hint">Role</div><b>${esc(c.role||'—')}</b></div>
+    <div><div class="hint">AI Score</div>${c.score?`<span class="score ${scoreCls(c.score)}">${c.score}</span>`:'—'}</div>
+    <div><div class="hint">Stage</div><span class="tag tag-blue">${(STAGES.find(s=>s.k===(c.stage||'sourced'))||{}).t}</span></div>
+  </div>
+  ${c.aiSummary?`<div style="background:var(--blue-bg);border-radius:10px;padding:11px 14px;font-size:12.5px;margin-bottom:14px"><b>🤖 AI:</b> ${esc(c.aiSummary)}</div>`:''}
+  <div class="m-field"><label>Move to stage</label><select id="cd-stage">${STAGES.map(s=>`<option value="${s.k}" ${s.k===(c.stage||'sourced')?'selected':''}>${s.t}</option>`).join('')}</select></div>
+  <div class="m-foot"><button class="btn btn-wa" onclick="closeModal();waModal(${c.id})">💬 WhatsApp</button>
+    <button class="btn btn-pri" onclick="const s=document.getElementById('cd-stage').value;R.candidates.find(x=>x.id===${c.id}).stage=s;saveR();closeModal();nav(curView)">Save</button></div>`); }
+
+/* ── AI Screener ── */
+VIEWS['recruiter.screener']=()=>{
+  setHead('AI Screener','Claude scores candidates against your JD','');
+  const job=R.jobs.find(j=>j.id===R.activeJob)||R.jobs[0];
+  const unscored=R.candidates.filter(c=>!c.score&&c.cv);
+  C(`<div class="card" style="max-width:720px">
+    <div class="m-field"><label>Job to screen against</label>
+      <select id="scr-job">${R.jobs.map(j=>`<option value="${j.id}" ${job&&j.id===job.id?'selected':''}>${esc(j.title)}</option>`).join('')||'<option value="">— create a job first —</option>'}</select></div>
+    <div style="display:flex;align-items:center;gap:12px;margin:14px 0">
+      <div class="hint">${unscored.length} candidate(s) with CV text and no score</div>
+      <button class="btn btn-pri" style="margin-left:auto" onclick="runScreener()">🤖 Screen ${unscored.length} Candidate(s)</button>
+    </div>
+    <div id="scr-log" style="font-size:12px;color:var(--ink-2);max-height:300px;overflow-y:auto"></div>
+  </div>
+  <div class="section-title">Scored Candidates</div>
+  <div class="card" style="padding:6px 16px"><table class="tbl"><thead><tr><th>Name</th><th>Score</th><th>Summary</th></tr></thead><tbody>
+    ${R.candidates.filter(c=>c.score).sort((a,b)=>b.score-a.score).map(c=>`<tr><td style="font-weight:700">${esc(c.name)}</td><td><span class="score ${scoreCls(c.score)}">${c.score}</span></td><td class="hint">${esc(c.aiSummary||'')}</td></tr>`).join('')||'<tr><td colspan="3" class="hint" style="text-align:center;padding:20px">Nothing scored yet</td></tr>'}
+  </tbody></table></div>`);
+};
+async function claudeCall(system, userMsg, maxTokens){
+  if(!cfg.claudeKey) throw new Error('Claude API key not set — go to Settings');
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':cfg.claudeKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:maxTokens||400, system, messages:[{role:'user',content:userMsg}] })});
+  const txt=await res.text(); let data; try{ data=JSON.parse(txt);}catch(e){ throw new Error('Bad API response'); }
+  if(!res.ok) throw new Error(data.error?.message||'API error '+res.status);
+  return data.content[0].text;
+}
+async function runScreener(){
+  const jobId=+document.getElementById('scr-job').value; const job=R.jobs.find(j=>j.id===jobId);
+  if(!job||!job.jd) return toast('Selected job has no JD','err');
+  const log=document.getElementById('scr-log'); const targets=R.candidates.filter(c=>!c.score&&c.cv);
+  if(!targets.length) return toast('No unscored candidates with CV text','err');
+  for(const c of targets){
+    log.innerHTML+=`<div>⏳ Screening ${esc(c.name)}...</div>`;
+    try{
+      const out=await claudeCall('You are an expert recruiter. Score the candidate CV against the JD from 0-100. Reply ONLY with JSON: {"score":N,"summary":"one sentence"}',
+        'JD:\n'+job.jd+'\n\nCV:\n'+c.cv, 200);
+      const m=out.match(/\{[\s\S]*\}/); const j=JSON.parse(m[0]);
+      c.score=Math.round(j.score); c.aiSummary=j.summary; if((c.stage||'sourced')==='sourced') c.stage='screened';
+      log.innerHTML+=`<div>✅ ${esc(c.name)} → <b>${c.score}</b></div>`;
+    }catch(e){ log.innerHTML+=`<div style="color:var(--red)">❌ ${esc(c.name)}: ${esc(e.message)}</div>`; }
+    saveR();
+  }
+  toast('Screening done','ok'); buildNav();
+}
+/* ── WhatsApp (Green API) ── */
+const chatIdOf = phone => String(phone||'').replace(/[^\d]/g,'')+'@c.us';
+async function greenSend(phone, message){
+  if(!cfg.greenId||!cfg.greenToken) throw new Error('Green API not configured — go to Settings');
+  const url=`https://${cfg.greenId.slice(0,4)}.api.greenapi.com/waInstance${cfg.greenId}/sendMessage/${cfg.greenToken}`;
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chatId:chatIdOf(phone),message})});
+  const txt=await res.text(); let d={}; try{ d=JSON.parse(txt);}catch(e){}
+  if(!res.ok) throw new Error(d.message||('Green API error '+res.status));
+  return d;
+}
+function personalize(tpl, name, extra){
+  let out=(tpl||'').replace(/\{name\}/gi, firstName(name)).replace(/\{full_name\}/gi, name||'')
+    .replace(/\{sender\}/gi, firstName(session.name)).replace(/\bHi Candidate\b/g,'Hi '+firstName(name));
+  Object.entries(extra||{}).forEach(([k,v])=>{ out=out.replace(new RegExp('\\{'+k+'\\}','gi'), v||''); });
+  return out;
+}
+function waModal(candId){
+  const c=R.candidates.find(x=>x.id===+candId); if(!c) return;
+  if(!c.phone) return toast('No phone number for '+c.name,'err');
+  openModal(`<h3>💬 WhatsApp — ${esc(c.name)}</h3>
+  <div class="m-field"><label>Message ({name} auto-fills)</label>
+  <textarea id="wa-msg" rows="6">Hi {name} 👋, I'm {sender} from NHRMS. Your profile has been shortlisted for a role we're hiring. Are you open to a quick chat this week?</textarea></div>
+  <div style="background:var(--line-2);border-radius:9px;padding:9px 12px;font-size:11.5px;color:var(--ink-2)" id="wa-preview"></div>
+  <div class="m-foot"><button class="btn btn-sec" onclick="closeModal()">Cancel</button><button class="btn btn-wa" onclick="waSend(${c.id})">📤 Send</button></div>`);
+  const upd=()=>{document.getElementById('wa-preview').textContent='Preview: '+personalize(document.getElementById('wa-msg').value,c.name);};
+  document.getElementById('wa-msg').addEventListener('input',upd); upd();
+}
+async function waSend(candId){
+  const c=R.candidates.find(x=>x.id===+candId);
+  const msg=personalize(document.getElementById('wa-msg').value, c.name);
+  try{
+    await greenSend(c.phone, msg);
+    c.waSent=true; if(['sourced','screened','shortlisted'].includes(c.stage||'sourced')) c.stage='messaged';
+    R.convs[c.id]=R.convs[c.id]||[]; R.convs[c.id].push({role:'assistant',content:msg,time:Date.now()});
+    saveR(); closeModal(); nav(curView); toast('Sent to '+firstName(c.name)+' ✅','ok');
+  }catch(e){ toast(e.message,'err'); }
+}
+VIEWS['recruiter.outreach']=()=>{
+  setHead('WhatsApp Outreach','Bulk message shortlisted candidates','');
+  const short=R.candidates.filter(c=>c.stage==='shortlisted'&&!c.waSent&&c.phone);
+  C(`<div class="card" style="max-width:760px">
+    <div class="section-title" style="margin-top:0">Bulk Send — Shortlisted (${short.length} ready)</div>
+    ${short.length?`
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">${short.map(c=>`<span class="tag tag-green">${esc(c.name)}</span>`).join('')}</div>
+    <div class="m-field"><label>Message ({name}, {sender} auto-fill per candidate)</label>
+      <textarea id="blk-msg" rows="6">Hi {name} 👋, I'm {sender} from NHRMS. Great news — you've been shortlisted for a role. Are you open to a quick chat this week?</textarea></div>
+    <button class="btn btn-wa" onclick="bulkSend()">📤 Send to ${short.length} Candidate(s)</button>
+    <div id="blk-log" style="font-size:12px;margin-top:12px;color:var(--ink-2)"></div>`
+    :`<div class="empty"><div class="ei">📭</div><div class="et">No shortlisted candidates awaiting outreach</div><div class="ed">Move candidates to "Shortlisted" on the board — they'll appear here.</div></div>`}
+  </div>
+  <div class="section-title">🤖 AI Auto-Reply Bot</div>
+  <div class="card" style="max-width:760px;display:flex;align-items:center;gap:14px">
+    <div style="flex:1"><b>${_polling?'<span class="pulse"></span> Bot is live':'Bot is stopped'}</b>
+      <div class="hint" style="margin-top:3px">Polls WhatsApp for replies every 12s and answers with Claude. Replies land in Contacted.</div></div>
+    ${_polling?`<button class="btn btn-danger" onclick="stopBot();nav('outreach')">⏹ Stop Bot</button>`:`<button class="btn btn-pri" onclick="startBot();nav('outreach')">▶ Start Bot</button>`}
+  </div>`);
+};
+async function bulkSend(){
+  const tpl=document.getElementById('blk-msg').value; const log=document.getElementById('blk-log');
+  const short=R.candidates.filter(c=>c.stage==='shortlisted'&&!c.waSent&&c.phone);
+  for(const c of short){
+    try{ const msg=personalize(tpl,c.name); await greenSend(c.phone,msg);
+      c.waSent=true; c.stage='messaged'; R.convs[c.id]=R.convs[c.id]||[]; R.convs[c.id].push({role:'assistant',content:msg,time:Date.now()});
+      log.innerHTML+=`<div>✅ ${esc(c.name)}</div>`; saveR();
+      await new Promise(r=>setTimeout(r, 2500+Math.random()*2000));
+    }catch(e){ log.innerHTML+=`<div style="color:var(--red)">❌ ${esc(c.name)}: ${esc(e.message)}</div>`; }
+  }
+  toast('Bulk send finished','ok'); buildNav();
+}
+
+/* ── Bot polling (shared by recruiter + marketing) ── */
+let _polling=false, _pollTimer=null;
+function startBot(){ if(_polling) return; _polling=true; pollLoop(); toast('Bot started ▶','ok'); }
+function stopBot(){ _polling=false; clearTimeout(_pollTimer); toast('Bot stopped ⏹','ok'); }
+async function pollLoop(){
+  if(!_polling) return;
+  try{ await pollOnce(); }catch(e){ console.warn('poll',e); }
+  _pollTimer=setTimeout(pollLoop, 12000);
+}
+async function pollOnce(){
+  if(!cfg.greenId||!cfg.greenToken) return;
+  const base=`https://${cfg.greenId.slice(0,4)}.api.greenapi.com/waInstance${cfg.greenId}`;
+  const res=await fetch(`${base}/receiveNotification/${cfg.greenToken}?receiveTimeout=5`);
+  const txt=await res.text(); if(!txt||txt==='null') return;
+  let n; try{ n=JSON.parse(txt);}catch(e){ return; }
+  if(!n) return;
+  await fetch(`${base}/deleteNotification/${cfg.greenToken}/${n.receiptId}`,{method:'DELETE'});
+  const b=n.body;
+  if(b?.typeWebhook!=='incomingMessageReceived') return;
+  const chatId=b.senderData?.chatId||''; const text=b.messageData?.textMessageData?.textMessage||b.messageData?.extendedTextMessageData?.text||'';
+  if(!text) return;
+  const phoneDigits=chatId.replace('@c.us','');
+  // match candidate first, then lead
+  const cand=R.candidates.find(c=>String(c.phone||'').replace(/[^\d]/g,'')===phoneDigits);
+  const lead=M.leads.find(l=>String(l.phone||'').replace(/[^\d]/g,'')===phoneDigits);
+  if(cand){
+    R.convs[cand.id]=R.convs[cand.id]||[]; R.convs[cand.id].push({role:'user',content:text,time:Date.now()}); saveR();
+    try{
+      const hist=R.convs[cand.id].slice(-8).map(m=>`${m.role==='user'?'Candidate':'Recruiter'}: ${m.content}`).join('\n');
+      const reply=await claudeCall(`You are a friendly recruiter assistant at NHRMS chatting on WhatsApp with candidate ${cand.name}. Keep replies under 60 words, warm and helpful. If they want to schedule, share: ${cfg.calLink||'we will send a calendar link shortly'}.`, hist, 200);
+      await greenSend(cand.phone, reply);
+      R.convs[cand.id].push({role:'assistant',content:reply,time:Date.now(),bot:true}); saveR();
+    }catch(e){ console.warn(e); }
+  } else if(lead){
+    M.inbox[lead.id]=M.inbox[lead.id]||[]; M.inbox[lead.id].push({role:'user',content:text,time:Date.now()});
+    try{
+      const hist=M.inbox[lead.id].slice(-8).map(m=>`${m.role==='user'?'Lead':'Us'}: ${m.content}`).join('\n');
+      const reply=await claudeCall(`You are a friendly sales assistant at NHRMS (AI recruitment platform) chatting on WhatsApp with ${lead.name} (${lead.roleTitle||''} at ${lead.company||''}). Qualify their interest, keep replies under 60 words. If interested, offer a demo call.`, hist, 200);
+      await greenSend(lead.phone, reply);
+      M.inbox[lead.id].push({role:'assistant',content:reply,time:Date.now(),bot:true});
+      // AI heat tagging
+      const heat=await claudeCall('Classify the lead\'s interest from this conversation as exactly one word: Hot, Warm, or Cold.', hist, 10);
+      lead.heat=(heat.match(/Hot|Warm|Cold/i)||['Warm'])[0];
+    }catch(e){ console.warn(e); }
+    saveM();
+  }
+  if(document.getElementById('app').classList.contains('on')) buildNav();
+}
+
+/* ── Contacted ── */
+VIEWS['recruiter.contacted']=()=>{
+  setHead('Contacted','Every candidate you\'ve messaged — full threads',
+    _polling?`<span class="tag tag-green"><span class="pulse"></span> Bot live</span> <button class="btn btn-danger btn-sm" onclick="stopBot();nav('contacted')">⏹ Stop</button>`
+            :`<button class="btn btn-pri btn-sm" onclick="startBot();nav('contacted')">▶ Start Bot</button>`);
+  const list=R.candidates.filter(c=>c.waSent||(R.convs[c.id]||[]).length).sort((a,b)=>{
+    const la=(R.convs[a.id]||[]).slice(-1)[0]?.time||0, lb=(R.convs[b.id]||[]).slice(-1)[0]?.time||0; return lb-la;});
+  if(!list.length) return C(`<div class="card empty"><div class="ei">📬</div><div class="et">Nobody contacted yet</div><div class="ed">Send WhatsApp messages and threads will appear here.</div></div>`);
+  const sel=R._csel&&list.find(c=>c.id===R._csel)?R._csel:list[0].id;
+  R._csel=sel; const selC=list.find(c=>c.id===sel);
+  C(`<div class="two-panel">
+    <div class="tp-list">${list.map(c=>{const conv=R.convs[c.id]||[];const last=conv.slice(-1)[0];const hasReply=conv.some(m=>m.role==='user');
+      return `<div class="tp-item${c.id===sel?' sel':''}" onclick="R._csel=${c.id};nav('contacted')">
+        <div class="tp-name">${esc(c.name)} ${hasReply?'<span class="tag tag-green" style="font-size:9px">replied</span>':''}</div>
+        <div class="tp-sub">${last?esc(last.content.slice(0,42))+'…':''}</div></div>`;}).join('')}</div>
+    <div class="tp-main">
+      <div class="chat-head"><b>${esc(selC.name)}</b><span class="hint">${esc(selC.phone||'')}</span></div>
+      <div class="chat-body" id="chat-body">${(R.convs[sel]||[]).map(m=>`
+        <div class="msg ${m.role==='user'?'msg-in':'msg-out'}">${esc(m.content)}</div>
+        <div class="msg-meta ${m.role==='user'?'':'out'}">${m.role==='user'?'↙':'↗'}${m.bot?' 🤖':''} ${fmtTime(m.time)}</div>`).join('')}</div>
+      <div class="chat-send"><input id="cc-input" placeholder="Type a reply…" onkeydown="if(event.key==='Enter')contactedSend()"><button onclick="contactedSend()">➤</button></div>
+    </div></div>`);
+  const cb=document.getElementById('chat-body'); cb.scrollTop=cb.scrollHeight;
+};
+async function contactedSend(){
+  const c=R.candidates.find(x=>x.id===R._csel); const inp=document.getElementById('cc-input'); const msg=inp.value.trim(); if(!msg||!c) return;
+  try{ await greenSend(c.phone,msg); R.convs[c.id]=R.convs[c.id]||[]; R.convs[c.id].push({role:'assistant',content:msg,time:Date.now()}); saveR(); nav('contacted'); }
+  catch(e){ toast(e.message,'err'); }
+}
+
+/* ── Recruiter analytics ── */
+VIEWS['recruiter.analytics']=()=>{
+  setHead('Analytics','Recruiting funnel performance','');
+  const cs=R.candidates; const sent=cs.filter(c=>c.waSent).length;
+  const replied=cs.filter(c=>(R.convs[c.id]||[]).some(m=>m.role==='user')).length;
+  const rate=sent?Math.round(replied/sent*100):0;
+  const stageCounts=STAGES.map(s=>({...s,n:cs.filter(c=>(c.stage||'sourced')===s.k).length}));
+  const max=Math.max(...stageCounts.map(s=>s.n),1);
+  C(`<div class="grid-stats">
+    <div class="stat"><div class="k">${cs.length}</div><div class="l">Candidates</div></div>
+    <div class="stat"><div class="k">${sent}</div><div class="l">Messaged</div></div>
+    <div class="stat"><div class="k">${rate}%</div><div class="l">Reply Rate</div></div>
+    <div class="stat"><div class="k">${cs.filter(c=>c.stage==='placed').length}</div><div class="l">Placed</div></div>
+  </div>
+  <div class="card"><div class="section-title" style="margin-top:0">Funnel</div>
+    ${stageCounts.map(s=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">
+      <div style="width:90px;font-size:11.5px;font-weight:700;color:var(--ink-2)">${s.t}</div>
+      <div style="flex:1;background:var(--line-2);border-radius:8px;height:22px;overflow:hidden">
+        <div style="width:${Math.round(s.n/max*100)}%;min-width:${s.n?'28px':'0'};height:100%;background:${s.c};border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:11px;font-weight:800">${s.n||''}</div>
+      </div></div>`).join('')}
+  </div>`);
+};
+/* ═══════════ MARKETING MODULE ═══════════ */
+const heatTag = h => h==='Hot'?'<span class="tag tag-red">🔥 Hot</span>':h==='Cold'?'<span class="tag tag-gray">❄️ Cold</span>':'<span class="tag tag-amber">🌤 Warm</span>';
+
+VIEWS['marketing.dashboard']=()=>{
+  setHead('Marketing Dashboard','Campaigns, replies and hot leads at a glance',
+    `<button class="btn btn-pri btn-sm" onclick="campModal()">+ New Campaign</button>`);
+  const sent=M.campaigns.reduce((n,c)=>n+(c.sent||0),0);
+  const repliedLeads=M.leads.filter(l=>(M.inbox[l.id]||[]).some(m=>m.role==='user'));
+  const rate=sent?Math.round(repliedLeads.length/sent*100):0;
+  const hot=M.leads.filter(l=>l.heat==='Hot');
+  C(`<div class="grid-stats">
+    <div class="stat"><div class="k">${M.leads.length}</div><div class="l">Total Leads</div></div>
+    <div class="stat"><div class="k">${M.campaigns.filter(c=>c.status==='Active').length}</div><div class="l">Active Campaigns</div><div class="d">${sent} msgs sent</div></div>
+    <div class="stat"><div class="k">${rate}%</div><div class="l">Reply Rate</div></div>
+    <div class="stat"><div class="k">${hot.length}</div><div class="l">🔥 Hot Leads</div></div>
+  </div>
+  <div class="section-title">🔥 Hot leads — follow up today</div>
+  ${hot.length?`<div class="card" style="padding:6px 16px"><table class="tbl"><tbody>
+    ${hot.map(l=>`<tr><td style="font-weight:700">${esc(l.name)}</td><td class="hint">${esc(l.company||'')}</td><td>${heatTag(l.heat)}</td>
+    <td style="text-align:right"><button class="btn btn-pri btn-sm" onclick="M._isel=${l.id};nav('inbox')">Open thread →</button></td></tr>`).join('')}
+  </tbody></table></div>`
+  :`<div class="card empty"><div class="ei">🔍</div><div class="et">No hot leads yet</div><div class="ed">Launch a campaign — the AI bot tags leads Hot/Warm/Cold as replies come in.</div></div>`}`);
+};
+
+/* ── Leads ── */
+VIEWS['marketing.leads']=()=>{
+  setHead('Leads & Contacts','Your marketing contact database',
+    `<button class="btn btn-sec btn-sm" onclick="csvImportModal('mkt')">📤 Import CSV</button>
+     <button class="btn btn-pri btn-sm" onclick="leadModal()">+ Add Manually</button>`);
+  if(!M.leads.length) return C(`<div class="card empty"><div class="ei">🎯</div><div class="et">No leads yet</div><div class="ed">Import a CSV (name, company, role, phone) or add manually.</div></div>`);
+  C(`<div class="card" style="padding:6px 16px"><table class="tbl"><thead><tr><th>Name</th><th>Company</th><th>Role</th><th>Phone</th><th>Stage</th><th>Heat</th><th></th></tr></thead><tbody>
+    ${M.leads.map(l=>`<tr>
+      <td style="font-weight:700">${esc(l.name)}</td><td>${esc(l.company||'—')}</td><td class="hint">${esc(l.roleTitle||'—')}</td>
+      <td class="hint">${esc(l.phone||'—')}</td>
+      <td><span class="tag ${l.stage==='Client'?'tag-green':l.stage==='Active'?'tag-blue':'tag-gray'}">${l.stage||'Prospect'}</span></td>
+      <td>${l.heat?heatTag(l.heat):'—'}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn btn-sec btn-sm" onclick="leadModal(${l.id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="leadDelete(${l.id})">🗑</button></td></tr>`).join('')}
+  </tbody></table></div>`);
+};
+function leadModal(id){
+  const l=id?M.leads.find(x=>x.id===+id):{};
+  openModal(`<h3>🎯 ${id?'Edit':'Add'} Lead</h3>
+  <div class="m-field"><label>Name</label><input id="lm-name" value="${esc(l.name||'')}"></div>
+  <div class="m-field"><label>Company</label><input id="lm-company" value="${esc(l.company||'')}"></div>
+  <div class="m-field"><label>Role / Title</label><input id="lm-role" value="${esc(l.roleTitle||'')}"></div>
+  <div class="m-field"><label>Phone (with country code)</label><input id="lm-phone" value="${esc(l.phone||'')}"></div>
+  <div class="m-field"><label>Stage</label><select id="lm-stage">${['Prospect','Active','Client'].map(s=>`<option ${l.stage===s?'selected':''}>${s}</option>`).join('')}</select></div>
+  <div class="m-foot"><button class="btn btn-sec" onclick="closeModal()">Cancel</button><button class="btn btn-pri" onclick="leadSave(${id||0})">Save</button></div>`);
+}
+function leadSave(id){
+  const name=document.getElementById('lm-name').value.trim(); if(!name) return toast('Name required','err');
+  const d={ name, company:document.getElementById('lm-company').value.trim(), roleTitle:document.getElementById('lm-role').value.trim(),
+    phone:document.getElementById('lm-phone').value.trim(), stage:document.getElementById('lm-stage').value };
+  if(id){ Object.assign(M.leads.find(x=>x.id===+id), d); } else { M.leads.push({ id:Date.now(), ...d, heat:null, added:Date.now(), source:'Manual' }); }
+  saveM(); closeModal(); nav('leads'); toast('Lead saved','ok');
+}
+function leadDelete(id){ id=+id; if(!confirm('Delete this lead?')) return;
+  M.leads=M.leads.filter(l=>l.id!==id); delete M.inbox[id]; saveM(); nav('leads'); toast('Deleted','ok'); }
+
+/* ── CSV import (shared: recruit | mkt) ── */
+function csvImportModal(kind){
+  openModal(`<h3>📤 Import CSV — ${kind==='recruit'?'Candidates':'Leads'}</h3>
+  <div class="hint" style="margin-bottom:10px">Columns: ${kind==='recruit'?'<b>name, phone, role</b>':'<b>name, company, role, phone</b>'} (header row required; extra columns kept)</div>
+  <div class="m-field"><input type="file" id="csv-file" accept=".csv,text/csv"></div>
+  <div class="m-foot"><button class="btn btn-sec" onclick="closeModal()">Cancel</button><button class="btn btn-pri" onclick="csvDoImport('${kind}')">Import</button></div>`);
+}
+function parseCSV(text){
+  const rows=[]; let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){ const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; }
+    else if(ch==='"') q=true;
+    else if(ch===','){ row.push(cur);cur=''; }
+    else if(ch==='\n'||ch==='\r'){ if(cur!==''||row.length){row.push(cur);rows.push(row);row=[];cur='';} if(ch==='\r'&&text[i+1]==='\n')i++; }
+    else cur+=ch; }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows.filter(r=>r.some(c=>c.trim()));
+}
+function csvDoImport(kind){
+  const f=document.getElementById('csv-file').files[0]; if(!f) return toast('Choose a file','err');
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const rows=parseCSV(rd.result); if(rows.length<2) return toast('CSV needs a header + data rows','err');
+    const headers=rows[0].map(h=>h.trim().toLowerCase());
+    let n=0;
+    rows.slice(1).forEach((r,i)=>{
+      const obj={}; headers.forEach((h,hi)=>{ if(h!=='id') obj[h]=(r[hi]||'').trim(); });
+      if(!obj.name) return;
+      const _id=Date.now()+i;
+      if(kind==='recruit'){ R.candidates.push({ id:_id, name:obj.name, phone:obj.phone||'', role:obj.role||'', cv:obj.cv||'', stage:'sourced', score:null, waSent:false, added:Date.now() }); }
+      else { M.leads.push({ id:_id, name:obj.name, company:obj.company||'', roleTitle:obj.role||obj.title||'', phone:obj.phone||'', stage:'Prospect', heat:null, added:Date.now(), source:'CSV' }); }
+      n++;
+    });
+    if(kind==='recruit') saveR(); else saveM();
+    closeModal(); nav(curView); toast(n+' imported ✅','ok');
+  };
+  rd.readAsText(f);
+}
+
+/* ── Campaigns ── */
+VIEWS['marketing.campaigns']=()=>{
+  setHead('Campaigns','WhatsApp campaigns to your leads',`<button class="btn btn-pri btn-sm" onclick="campModal()">+ New Campaign</button>`);
+  if(!M.campaigns.length) return C(`<div class="card empty"><div class="ei">📣</div><div class="et">No campaigns yet</div><div class="ed">Create one, pick your audience and launch.</div></div>`);
+  C(`<div class="card" style="padding:6px 16px"><table class="tbl"><thead><tr><th>Campaign</th><th>Audience</th><th>Sent</th><th>Replied</th><th>Rate</th><th>Status</th><th></th></tr></thead><tbody>
+    ${M.campaigns.map(c=>{
+      const replied=c.memberIds?c.memberIds.filter(id=>(M.inbox[id]||[]).some(m=>m.role==='user')).length:0;
+      const rate=c.sent?Math.round(replied/c.sent*100):0;
+      return `<tr><td style="font-weight:700">${esc(c.name)}</td><td>${(c.memberIds||[]).length} leads</td>
+      <td>${c.sent||0}</td><td>${replied}</td><td style="font-weight:800;color:var(--green)">${c.sent?rate+'%':'—'}</td>
+      <td><span class="tag ${c.status==='Active'?'tag-green':c.status==='Done'?'tag-blue':'tag-amber'}">${c.status}</span></td>
+      <td style="text-align:right;white-space:nowrap">
+        ${c.status==='Draft'?`<button class="btn btn-pri btn-sm" onclick="campLaunch(${c.id})">🚀 Launch</button>`:''}
+        <button class="btn btn-danger btn-sm" onclick="campDelete(${c.id})">🗑</button></td></tr>`;}).join('')}
+  </tbody></table></div>`);
+};
+function campModal(){
+  if(!M.leads.length) return toast('Add leads first','err');
+  openModal(`<h3>📣 New Campaign</h3>
+  <div class="m-field"><label>Campaign Name</label><input id="cp-name" placeholder="e.g. HR Heads — July Outreach"></div>
+  <div class="m-field"><label>Template</label><select id="cp-tpl" onchange="document.getElementById('cp-msg').value=M.templates.find(t=>t.id===+this.value)?.body||''">
+    <option value="">— custom —</option>${M.templates.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></div>
+  <div class="m-field"><label>Message ({name}, {company}, {sender} auto-fill)</label><textarea id="cp-msg" rows="5"></textarea></div>
+  <div class="m-field"><label>Audience</label>
+    <div style="max-height:160px;overflow-y:auto;border:1.5px solid var(--line);border-radius:10px;padding:8px 12px">
+      <label style="display:flex;gap:8px;align-items:center;font-size:12.5px;font-weight:700;text-transform:none;letter-spacing:0;color:var(--ink);margin-bottom:6px"><input type="checkbox" style="width:auto" onchange="document.querySelectorAll('.cp-lead').forEach(c=>c.checked=this.checked)"> Select all</label>
+      ${M.leads.map(l=>`<label style="display:flex;gap:8px;align-items:center;font-size:12.5px;text-transform:none;letter-spacing:0;color:var(--ink);font-weight:500;margin-bottom:4px"><input type="checkbox" class="cp-lead" value="${l.id}" style="width:auto"> ${esc(l.name)} <span class="hint">${esc(l.company||'')}</span></label>`).join('')}
+    </div></div>
+  <div class="m-foot"><button class="btn btn-sec" onclick="closeModal()">Cancel</button><button class="btn btn-pri" onclick="campSave()">Create Draft</button></div>`);
+}
+function campSave(){
+  const name=document.getElementById('cp-name').value.trim(); const msg=document.getElementById('cp-msg').value.trim();
+  const ids=[...document.querySelectorAll('.cp-lead:checked')].map(c=>+c.value);
+  if(!name||!msg||!ids.length) return toast('Name, message and at least one lead required','err');
+  M.campaigns.push({ id:Date.now(), name, message:msg, memberIds:ids, sent:0, status:'Draft', created:Date.now() });
+  saveM(); closeModal(); nav('campaigns'); toast('Draft created — hit Launch when ready','ok');
+}
+async function campLaunch(id){
+  const c=M.campaigns.find(x=>x.id===+id); if(!c) return;
+  if(!confirm(`Launch "${c.name}" to ${c.memberIds.length} lead(s)?`)) return;
+  c.status='Active'; saveM(); nav('campaigns'); toast('Launching…','ok');
+  for(const lid of c.memberIds){
+    const l=M.leads.find(x=>x.id===lid); if(!l||!l.phone) continue;
+    try{
+      const msg=personalize(c.message, l.name, { company:l.company });
+      await greenSend(l.phone, msg);
+      c.sent++; M.inbox[l.id]=M.inbox[l.id]||[]; M.inbox[l.id].push({role:'assistant',content:msg,time:Date.now(),campaignId:c.id});
+      if(l.stage==='Prospect') l.stage='Active';
+      saveM();
+      await new Promise(r=>setTimeout(r, 3000+Math.random()*3000));
+    }catch(e){ console.warn(e); }
+  }
+  c.status='Done'; saveM(); if(curView==='campaigns') nav('campaigns'); toast(`Campaign done — ${c.sent} sent ✅`,'ok');
+}
+function campDelete(id){ if(!confirm('Delete campaign?')) return; M.campaigns=M.campaigns.filter(c=>c.id!==+id); saveM(); nav('campaigns'); }
+
+/* ── Templates ── */
+VIEWS['marketing.templates']=()=>{
+  setHead('Templates','Reusable WhatsApp message templates',`<button class="btn btn-pri btn-sm" onclick="tplModal()">+ New Template</button>`);
+  C(`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">
+    ${M.templates.map(t=>`<div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><b style="flex:1">${esc(t.name)}</b>
+        <button class="btn btn-sec btn-sm" onclick="tplModal(${t.id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="if(confirm('Delete template?')){M.templates=M.templates.filter(x=>x.id!==${t.id});saveM();nav('templates')}">🗑</button></div>
+      <div style="font-size:12.5px;color:var(--ink-2);line-height:1.55;background:var(--line-2);border-radius:9px;padding:10px 13px">${esc(t.body)}</div>
+    </div>`).join('')||'<div class="card empty"><div class="ei">✍️</div><div class="et">No templates</div></div>'}
+  </div>`);
+};
+function tplModal(id){
+  const t=id?M.templates.find(x=>x.id===+id):{};
+  openModal(`<h3>✍️ ${id?'Edit':'New'} Template</h3>
+  <div class="m-field"><label>Name</label><input id="tp-name" value="${esc(t.name||'')}"></div>
+  <div class="m-field"><label>Body ({name}, {company}, {sender} auto-fill)</label><textarea id="tp-body" rows="6">${esc(t.body||'')}</textarea></div>
+  <div class="m-foot"><button class="btn btn-sec" onclick="closeModal()">Cancel</button><button class="btn btn-pri" onclick="tplSave(${id||0})">Save</button></div>`);
+}
+function tplSave(id){
+  const name=document.getElementById('tp-name').value.trim(), body=document.getElementById('tp-body').value.trim();
+  if(!name||!body) return toast('Both fields required','err');
+  if(id){ Object.assign(M.templates.find(x=>x.id===+id),{name,body}); } else M.templates.push({id:Date.now(),name,body});
+  saveM(); closeModal(); nav('templates');
+}
+
+/* ── Inbox ── */
+VIEWS['marketing.inbox']=()=>{
+  setHead('Inbox','Lead replies — AI-tagged by interest',
+    _polling?`<span class="tag tag-green"><span class="pulse"></span> Bot live</span> <button class="btn btn-danger btn-sm" onclick="stopBot();nav('inbox')">⏹ Stop</button>`
+            :`<button class="btn btn-pri btn-sm" onclick="startBot();nav('inbox')">▶ Start Bot</button>`);
+  const list=M.leads.filter(l=>(M.inbox[l.id]||[]).length).sort((a,b)=>{
+    const la=(M.inbox[a.id]||[]).slice(-1)[0]?.time||0, lb=(M.inbox[b.id]||[]).slice(-1)[0]?.time||0; return lb-la;});
+  if(!list.length) return C(`<div class="card empty"><div class="ei">💬</div><div class="et">Inbox is empty</div><div class="ed">Launch a campaign — conversations appear here as leads reply.</div></div>`);
+  const sel=M._isel&&list.find(l=>l.id===M._isel)?M._isel:list[0].id;
+  M._isel=sel; const selL=list.find(l=>l.id===sel);
+  C(`<div class="two-panel">
+    <div class="tp-list">${list.map(l=>{const conv=M.inbox[l.id]||[];const last=conv.slice(-1)[0];
+      return `<div class="tp-item${l.id===sel?' sel':''}" onclick="M._isel=${l.id};nav('inbox')">
+        <div class="tp-name">${esc(l.name)} ${l.heat?heatTag(l.heat):''}</div>
+        <div class="tp-sub">${esc(l.company||'')} · ${last?esc(last.content.slice(0,32))+'…':''}</div></div>`;}).join('')}</div>
+    <div class="tp-main">
+      <div class="chat-head"><b>${esc(selL.name)}</b><span class="hint">${esc(selL.roleTitle||'')} · ${esc(selL.company||'')}</span>${selL.heat?heatTag(selL.heat):''}</div>
+      <div class="chat-body" id="chat-body">${(M.inbox[sel]||[]).map(m=>`
+        <div class="msg ${m.role==='user'?'msg-in':'msg-out'}">${esc(m.content)}</div>
+        <div class="msg-meta ${m.role==='user'?'':'out'}">${m.role==='user'?'↙':'↗'}${m.bot?' 🤖':''} ${fmtTime(m.time)}</div>`).join('')}</div>
+      <div class="chat-send"><input id="ib-input" placeholder="Reply as ${esc(firstName(session.name))}…" onkeydown="if(event.key==='Enter')inboxSend()"><button onclick="inboxSend()">➤</button></div>
+    </div></div>`);
+  const cb=document.getElementById('chat-body'); cb.scrollTop=cb.scrollHeight;
+};
+async function inboxSend(){
+  const l=M.leads.find(x=>x.id===M._isel); const inp=document.getElementById('ib-input'); const msg=inp.value.trim(); if(!msg||!l) return;
+  try{ await greenSend(l.phone,msg); M.inbox[l.id]=M.inbox[l.id]||[]; M.inbox[l.id].push({role:'assistant',content:msg,time:Date.now()}); saveM(); nav('inbox'); }
+  catch(e){ toast(e.message,'err'); }
+}
+
+/* ── Marketing analytics ── */
+VIEWS['marketing.mkanalytics']=()=>{
+  setHead('Analytics','Campaign performance & lead funnel','');
+  const sent=M.campaigns.reduce((n,c)=>n+(c.sent||0),0);
+  const replied=M.leads.filter(l=>(M.inbox[l.id]||[]).some(m=>m.role==='user')).length;
+  const stages=['Prospect','Active','Client'].map((s,i)=>({t:s,n:M.leads.filter(l=>(l.stage||'Prospect')===s).length,c:['#94a3b8','#7c3aed','#16a34a'][i]}));
+  const max=Math.max(...stages.map(s=>s.n),1);
+  C(`<div class="grid-stats">
+    <div class="stat"><div class="k">${M.leads.length}</div><div class="l">Leads</div></div>
+    <div class="stat"><div class="k">${sent}</div><div class="l">Messages Sent</div></div>
+    <div class="stat"><div class="k">${sent?Math.round(replied/sent*100):0}%</div><div class="l">Reply Rate</div></div>
+    <div class="stat"><div class="k">${M.leads.filter(l=>l.stage==='Client').length}</div><div class="l">Converted Clients</div></div>
+  </div>
+  <div class="card"><div class="section-title" style="margin-top:0">Lead Funnel</div>
+    ${stages.map(s=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">
+      <div style="width:90px;font-size:11.5px;font-weight:700;color:var(--ink-2)">${s.t}</div>
+      <div style="flex:1;background:var(--line-2);border-radius:8px;height:22px;overflow:hidden">
+        <div style="width:${Math.round(s.n/max*100)}%;min-width:${s.n?'28px':'0'};height:100%;background:${s.c};border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:11px;font-weight:800">${s.n||''}</div>
+      </div></div>`).join('')}
+  </div>
+  <div class="section-title">Per-campaign</div>
+  <div class="card" style="padding:6px 16px"><table class="tbl"><thead><tr><th>Campaign</th><th>Sent</th><th>Replied</th><th>Rate</th></tr></thead><tbody>
+    ${M.campaigns.map(c=>{const rep=(c.memberIds||[]).filter(id=>(M.inbox[id]||[]).some(m=>m.role==='user')).length;
+      return `<tr><td style="font-weight:700">${esc(c.name)}</td><td>${c.sent||0}</td><td>${rep}</td><td style="font-weight:800;color:var(--green)">${c.sent?Math.round(rep/c.sent*100)+'%':'—'}</td></tr>`;}).join('')||'<tr><td colspan="4" class="hint" style="text-align:center;padding:18px">No campaigns yet</td></tr>'}
+  </tbody></table></div>`);
+};
+/* ═══════════ ADMIN MODULE ═══════════ */
+VIEWS['admin.overview']=()=>{
+  setHead('Admin Overview','Everything across both modules','');
+  const rSent=R.candidates.filter(c=>c.waSent).length;
+  const mSent=M.campaigns.reduce((n,c)=>n+(c.sent||0),0);
+  C(`<div class="grid-stats">
+    <div class="stat"><div class="k">${users.filter(u=>u.approved).length}</div><div class="l">Team Members</div>${users.filter(u=>!u.approved).length?`<div class="d" style="color:var(--amber)">${users.filter(u=>!u.approved).length} pending approval</div>`:''}</div>
+    <div class="stat"><div class="k">${R.candidates.length}</div><div class="l">Candidates (Recruit)</div><div class="d">${rSent} contacted</div></div>
+    <div class="stat"><div class="k">${M.leads.length}</div><div class="l">Leads (Marketing)</div><div class="d">${mSent} msgs sent</div></div>
+    <div class="stat"><div class="k">${R.candidates.filter(c=>c.stage==='placed').length + M.leads.filter(l=>l.stage==='Client').length}</div><div class="l">Wins (Placed + Clients)</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="card"><div class="section-title" style="margin-top:0">👤 Recruiting snapshot</div>
+      ${STAGES.map(s=>`<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--line-2)"><span style="color:var(--ink-2)">${s.t}</span><b>${R.candidates.filter(c=>(c.stage||'sourced')===s.k).length}</b></div>`).join('')}
+      <button class="btn btn-sec btn-sm" style="margin-top:12px" onclick="adminView('recruiter')">Open Recruiter view →</button></div>
+    <div class="card"><div class="section-title" style="margin-top:0">📣 Marketing snapshot</div>
+      ${['Prospect','Active','Client'].map(s=>`<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--line-2)"><span style="color:var(--ink-2)">${s}</span><b>${M.leads.filter(l=>(l.stage||'Prospect')===s).length}</b></div>`).join('')}
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0"><span style="color:var(--ink-2)">🔥 Hot leads</span><b>${M.leads.filter(l=>l.heat==='Hot').length}</b></div>
+      <button class="btn btn-sec btn-sm" style="margin-top:12px" onclick="adminView('marketing')">Open Marketing view →</button></div>
+  </div>`);
+};
+VIEWS['admin.team']=()=>{
+  setHead('Team','Approve members & manage roles','');
+  C(`<div class="card" style="padding:6px 16px"><table class="tbl"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>
+    ${users.map((u,i)=>`<tr>
+      <td style="font-weight:700">${esc(u.name)}</td><td class="hint">${esc(u.email)}</td>
+      <td><select style="width:auto;padding:5px 9px;font-size:12px" onchange="users[${i}].role=this.value;save(LS.users,users);toast('Role updated','ok')">
+        ${['admin','recruiter','marketing'].map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${r[0].toUpperCase()+r.slice(1)}</option>`).join('')}</select></td>
+      <td>${u.approved?'<span class="tag tag-green">Active</span>':'<span class="tag tag-amber">Pending</span>'}</td>
+      <td style="text-align:right;white-space:nowrap">
+        ${!u.approved?`<button class="btn btn-pri btn-sm" onclick="users[${i}].approved=true;save(LS.users,users);nav('team');toast('Approved ✅','ok')">✓ Approve</button>`:''}
+        ${u.email!==session.email?`<button class="btn btn-danger btn-sm" onclick="if(confirm('Remove ${esc(u.name)}?')){users.splice(${i},1);save(LS.users,users);nav('team')}">🗑</button>`:''}
+      </td></tr>`).join('')}
+  </tbody></table></div>
+  <div class="hint" style="margin-top:12px">💡 Team members create their own account from the login screen ("Create account") — they appear here as Pending until you approve.</div>`);
+};
+VIEWS['admin.masteranalytics']=()=>{
+  setHead('Master Analytics','Combined view across recruit + marketing','');
+  const rSent=R.candidates.filter(c=>c.waSent).length;
+  const rRep=R.candidates.filter(c=>(R.convs[c.id]||[]).some(m=>m.role==='user')).length;
+  const mSent=M.campaigns.reduce((n,c)=>n+(c.sent||0),0);
+  const mRep=M.leads.filter(l=>(M.inbox[l.id]||[]).some(m=>m.role==='user')).length;
+  C(`<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="card"><div class="section-title" style="margin-top:0;color:var(--blue)">👤 Recruiting</div>
+      <div class="grid-stats" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+        <div class="stat"><div class="k">${rSent}</div><div class="l">WA Sent</div></div>
+        <div class="stat"><div class="k">${rSent?Math.round(rRep/rSent*100):0}%</div><div class="l">Reply Rate</div></div>
+      </div></div>
+    <div class="card"><div class="section-title" style="margin-top:0;color:var(--purple)">📣 Marketing</div>
+      <div class="grid-stats" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+        <div class="stat"><div class="k">${mSent}</div><div class="l">WA Sent</div></div>
+        <div class="stat"><div class="k">${mSent?Math.round(mRep/mSent*100):0}%</div><div class="l">Reply Rate</div></div>
+      </div></div>
+  </div>`);
+};
+
+/* ═══════════ SETTINGS (shared) ═══════════ */
+VIEWS['settings']=VIEWS['recruiter.settings']=VIEWS['marketing.settings']=VIEWS['admin.settings']=()=>{
+  const isAdmin=session.role==='admin';
+  setHead('Settings','API keys & integrations','');
+  C(`<div style="max-width:660px">
+  ${isAdmin?`
+  <div class="card" style="margin-bottom:14px"><div class="section-title" style="margin-top:0">💬 Green API (WhatsApp)</div>
+    <div class="m-field"><label>Instance ID</label><input id="st-gid" value="${esc(cfg.greenId)}" placeholder="e.g. 1101234567"></div>
+    <div class="m-field"><label>API Token</label><input id="st-gtk" type="password" value="${esc(cfg.greenToken)}" placeholder="Token from greenapi.com console"></div>
+    <button class="btn btn-sec btn-sm" onclick="testGreen()">🔌 Test Connection</button> <span class="hint" id="st-gres"></span></div>
+  <div class="card" style="margin-bottom:14px"><div class="section-title" style="margin-top:0">🤖 Claude API (AI screening & bot)</div>
+    <div class="m-field"><label>API Key</label><input id="st-ck" type="password" value="${esc(cfg.claudeKey)}" placeholder="sk-ant-…"></div>
+    <button class="btn btn-sec btn-sm" onclick="testClaude()">🔌 Test</button> <span class="hint" id="st-cres"></span></div>
+  <div class="card" style="margin-bottom:14px"><div class="section-title" style="margin-top:0">📊 Google Sheets Sync</div>
+    <div class="m-field"><label>Apps Script Web App URL</label><input id="st-su" value="${esc(cfg.scriptUrl)}" placeholder="https://script.google.com/macros/s/…/exec"></div>
+    <div class="m-field"><label>Recruit Sheet ID</label><input id="st-rs" value="${esc(cfg.recruitSheetId)}" placeholder="Sheet ID from the Recruit spreadsheet URL"></div>
+    <div class="m-field"><label>Marketing Sheet ID</label><input id="st-ms" value="${esc(cfg.mktSheetId)}" placeholder="Sheet ID from the Marketing spreadsheet URL"></div>
+    <div class="hint">Sheet ID = the long string in the sheet's URL between /d/ and /edit. Deploy the provided apps-script.gs as a Web App (execute as you, access: anyone).</div>
+    <div style="margin-top:10px"><button class="btn btn-sec btn-sm" onclick="syncNow('recruit')">⬆ Sync Recruit now</button>
+    <button class="btn btn-sec btn-sm" onclick="syncNow('marketing')">⬆ Sync Marketing now</button> <span class="hint" id="st-sres"></span></div></div>
+  <div class="m-field"><label>Calendar / booking link (bot shares when candidates ask to schedule)</label><input id="st-cal" value="${esc(cfg.calLink||'')}" placeholder="e.g. topmate.io/sai"></div>
+  <button class="btn btn-pri" onclick="settingsSave()">💾 Save Settings</button>`
+  :`<div class="card"><div class="empty"><div class="ei">🔒</div><div class="et">Admin manages API keys</div><div class="ed">Ask your admin to configure Green API, Claude and Sheets sync.</div></div></div>`}
+  </div>`);
+};
+function settingsSave(){
+  cfg.greenId=document.getElementById('st-gid').value.trim();
+  cfg.greenToken=document.getElementById('st-gtk').value.trim();
+  cfg.claudeKey=document.getElementById('st-ck').value.trim();
+  cfg.scriptUrl=document.getElementById('st-su').value.trim();
+  cfg.recruitSheetId=document.getElementById('st-rs').value.trim();
+  cfg.mktSheetId=document.getElementById('st-ms').value.trim();
+  cfg.calLink=document.getElementById('st-cal').value.trim();
+  save(LS.cfg,cfg); toast('Settings saved ✅','ok');
+}
+async function testGreen(){
+  const el=document.getElementById('st-gres'); el.textContent='…';
+  const id=document.getElementById('st-gid').value.trim(), tk=document.getElementById('st-gtk').value.trim();
+  if(!id||!tk){ el.textContent='❌ Enter both fields first'; return; }
+  try{ const r=await fetch(`https://${id.slice(0,4)}.api.greenapi.com/waInstance${id}/getStateInstance/${tk}`);
+    const t=await r.text(); let d={}; try{ d=JSON.parse(t);}catch(e){}
+    el.textContent=r.ok?`✅ ${d.stateInstance||'connected'}`:`❌ ${d.message||'HTTP '+r.status}`;
+  }catch(e){ el.textContent='❌ '+e.message; }
+}
+async function testClaude(){
+  const el=document.getElementById('st-cres'); el.textContent='…';
+  const k=document.getElementById('st-ck').value.trim(); if(!k){ el.textContent='❌ Enter key first'; return; }
+  try{ const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:10,messages:[{role:'user',content:'Say OK'}]})});
+    el.textContent=r.ok?'✅ Working':'❌ HTTP '+r.status;
+  }catch(e){ el.textContent='❌ '+e.message; }
+}
+
+/* ═══════════ GOOGLE SHEETS SYNC ═══════════ */
+let _syncTimers={};
+function queueSync(kind){ clearTimeout(_syncTimers[kind]); _syncTimers[kind]=setTimeout(()=>doSync(kind), 4000); }
+async function doSync(kind){
+  if(!cfg.scriptUrl) return;
+  const sheetId = kind==='recruit'?cfg.recruitSheetId:cfg.mktSheetId;
+  if(!sheetId) return;
+  const payload = kind==='recruit'
+    ? { jobs:R.jobs, candidates:R.candidates.map(c=>({id:c.id,name:c.name,phone:c.phone,role:c.role,jobId:c.jobId,stage:c.stage,score:c.score,waSent:c.waSent,added:c.added})),
+        conversations:Object.entries(R.convs).flatMap(([cid,ms])=>ms.map(m=>({candidate_id:cid,role:m.role,content:m.content,time:m.time}))) }
+    : { leads:M.leads, campaigns:M.campaigns.map(c=>({id:c.id,name:c.name,sent:c.sent,status:c.status,audience:(c.memberIds||[]).length,created:c.created})),
+        inbox:Object.entries(M.inbox).flatMap(([lid,ms])=>ms.map(m=>({lead_id:lid,role:m.role,content:m.content,time:m.time}))) };
+  try{
+    await fetch(cfg.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({ action:'sync', module:kind, sheetId, payload }) });
+  }catch(e){ console.warn('sync failed', e); }
+}
+async function syncNow(kind){
+  const el=document.getElementById('st-sres'); if(el) el.textContent='… syncing';
+  cfg.scriptUrl=document.getElementById('st-su')?.value.trim()||cfg.scriptUrl;
+  cfg.recruitSheetId=document.getElementById('st-rs')?.value.trim()||cfg.recruitSheetId;
+  cfg.mktSheetId=document.getElementById('st-ms')?.value.trim()||cfg.mktSheetId;
+  save(LS.cfg,cfg);
+  await doSync(kind);
+  if(el) el.textContent='✅ pushed (check the sheet)';
+}
+
+/* ═══════════ BOOT ═══════════ */
+(function boot(){
+  // migrate old ScoutX data if present (nhrms_* keys)
+  try{
+    if(!R.candidates.length && localStorage.getItem('nhrms_jobs')){
+      const oldJobs=JSON.parse(localStorage.getItem('nhrms_jobs'))||[];
+      oldJobs.forEach(j=>{
+        const jid=j.id||Date.now();
+        R.jobs.push({ id:jid, title:j.title||'Imported Job', jd:j.jd||'', status:'Open', created:Date.now() });
+        (j.candidates||[]).forEach(c=>{
+          R.candidates.push({ id:c.id||Date.now()+Math.random()*1000|0, name:c.name||'Unknown', phone:c.phone||'', role:c.role||'',
+            jobId:jid, cv:c.cv||'', stage:c.status==='shortlisted'?'shortlisted':c.status==='messaged'?'messaged':'sourced',
+            score:c.score||null, waSent:!!c.waSent||c.status==='messaged', added:Date.now() });
+        });
+      });
+      if(R.jobs.length) { save(LS.recruit,R); }
+    }
+    const oldCfg=JSON.parse(localStorage.getItem('nhrms_cfg')||'null');
+    if(oldCfg && !cfg.claudeKey){
+      cfg.greenId=oldCfg.greenId||oldCfg.instanceId||''; cfg.greenToken=oldCfg.greenToken||oldCfg.token||'';
+      cfg.claudeKey=oldCfg.claudeKey||oldCfg.anthropicKey||''; cfg.scriptUrl=oldCfg.scriptUrl||oldCfg.syncUrl||'';
+      save(LS.cfg,cfg);
+    }
+  }catch(e){ console.warn('migration', e); }
+  if(!users.length){ authMode('setup'); return; }
+  if(session && users.find(u=>u.email===session.email&&u.approved)) enterApp();
+  else authMode('login');
+})();
+</script>
+</body>
+</html>
