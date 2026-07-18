@@ -284,7 +284,7 @@ table.tbl{width:100%;border-collapse:collapse}
 /* ═══════════ CORE STATE ═══════════ */
 /* Central auth via Google Apps Script (sends verification emails from krishna@nhrms.com).
    Paste the deployed /exec URL here. Empty = local-only auth fallback. */
-const AUTH_URL = '';
+const AUTH_URL = 'https://script.google.com/macros/s/AKfycbzSWxiNdm0ZjL9TwhjVgSp1zOqJJRsJ3_hwMQIhUbAPE-lCytw8Cl1D7mH7MkADYOOFuQ/exec';
 const AUTH_DOMAINS = ['nhrms.in','nhrms.com','rytadvisory.com','rytadvisory.in','rytpro.com'];
 const emailDomainOk = e => AUTH_DOMAINS.includes(String(e).split('@')[1]||'');
 async function authApi(action, payload){
