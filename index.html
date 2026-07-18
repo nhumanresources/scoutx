@@ -236,9 +236,15 @@ table.tbl{width:100%;border-collapse:collapse}
           <div class="rc" id="rc-marketing" onclick="pickRole('marketing')"><div class="ic">📣</div><div class="t">Marketing</div><div class="d">Leads & campaigns</div></div>
         </div>
       </div>
-      <div class="hint" style="margin-bottom:12px">⏳ Account needs Admin approval before you can sign in.</div>
-      <button class="auth-btn" onclick="doSignup()">Request Account →</button>
+      <div class="hint" style="margin-bottom:12px">🔐 We'll email you a verification code from krishna@nhrms.com. Company emails only (nhrms / rytadvisory / rytpro).</div>
+      <button class="auth-btn" onclick="doSignup()">Create Account →</button>
       <div class="auth-alt">Already have an account? <a onclick="authMode('login')">Sign in</a></div>
+    </div>
+    <div id="auth-verify" class="hidden">
+      <div style="background:var(--blue-bg);color:var(--blue);border-radius:10px;padding:10px 14px;font-size:12px;font-weight:600;margin-bottom:16px">📬 We emailed a 6-digit code to <b id="vf-email-show"></b> from krishna@nhrms.com. Enter it below.</div>
+      <div class="auth-field"><label>Verification Code</label><input id="vf-code" inputmode="numeric" maxlength="6" placeholder="6-digit code" style="letter-spacing:6px;text-align:center;font-size:18px;font-weight:700" onkeydown="if(event.key==='Enter')doVerify()"></div>
+      <button class="auth-btn" onclick="doVerify()">Verify & Activate →</button>
+      <div class="auth-alt"><a onclick="authMode('login')">Back to sign in</a></div>
     </div>
   </div>
 </div>
@@ -276,6 +282,17 @@ table.tbl{width:100%;border-collapse:collapse}
 
 <script>
 /* ═══════════ CORE STATE ═══════════ */
+/* Central auth via Google Apps Script (sends verification emails from krishna@nhrms.com).
+   Paste the deployed /exec URL here. Empty = local-only auth fallback. */
+const AUTH_URL = '';
+const AUTH_DOMAINS = ['nhrms.in','nhrms.com','rytadvisory.com','rytadvisory.in','rytpro.com'];
+const emailDomainOk = e => AUTH_DOMAINS.includes(String(e).split('@')[1]||'');
+async function authApi(action, payload){
+  const res = await fetch(AUTH_URL, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ action, ...payload }) });
+  const txt = await res.text(); let d; try{ d = JSON.parse(txt); }catch(e){ throw new Error('Auth server error'); }
+  if(d.error) throw new Error(d.error);
+  return d;
+}
 const LS = { users:'sx_users', session:'sx_session', cfg:'sx_cfg', recruit:'sx_recruit', mkt:'sx_mkt' };
 const load = (k,d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch(e){ return d; } };
 const save = (k,v) => localStorage.setItem(k, JSON.stringify(v));
@@ -301,7 +318,7 @@ async function sha(s){ const b=await crypto.subtle.digest('SHA-256', new TextEnc
 /* ═══════════ AUTH ═══════════ */
 function authMode(m){
   document.getElementById('auth-err').style.display='none';
-  ['login','setup','signup'].forEach(x => document.getElementById('auth-'+x).classList.toggle('hidden', x!==m));
+  ['login','setup','signup','verify'].forEach(x => document.getElementById('auth-'+x).classList.toggle('hidden', x!==m));
 }
 function authErr(m){ const e=document.getElementById('auth-err'); e.textContent=m; e.style.display='block'; }
 let _pickedRole = null;
@@ -317,16 +334,45 @@ async function doSetupAdmin(){
   session={ email, role:'admin', name }; save(LS.session, session);
   toast('Welcome, '+firstName(name)+'! 👑','ok'); enterApp();
 }
+let _pendingVerifyEmail = null;
 async function doSignup(){
   const name=document.getElementById('sg-name').value.trim(), email=document.getElementById('sg-email').value.trim().toLowerCase(), pass=document.getElementById('sg-pass').value;
   if(!name||!email||pass.length<6||!_pickedRole) return authErr('Fill all fields, pick a role — password min 6 chars.');
+  if(!emailDomainOk(email)) return authErr('Only company emails allowed: @'+AUTH_DOMAINS.join(', @'));
+  if(AUTH_URL){
+    try{
+      await authApi('signup', { name, email, hash:await sha(pass), role:_pickedRole });
+      _pendingVerifyEmail = email;
+      document.getElementById('vf-email-show').textContent = email;
+      authMode('verify'); toast('Code sent — check your inbox 📬','ok');
+    }catch(e){ authErr(e.message); }
+    return;
+  }
+  // local fallback (no auth server configured)
   if(users.find(u=>u.email===email)) return authErr('Account already exists for this email.');
   users.push({ name, email, hash:await sha(pass), role:_pickedRole, approved:false, created:Date.now() });
   save(LS.users, users);
   authMode('login'); toast('Request sent — ask your Admin to approve it.','ok');
 }
+async function doVerify(){
+  const code=document.getElementById('vf-code').value.trim();
+  if(code.length!==6) return authErr('Enter the 6-digit code from the email.');
+  try{
+    await authApi('verify', { email:_pendingVerifyEmail, code });
+    authMode('login'); toast('Verified ✅ — you can sign in now','ok');
+  }catch(e){ authErr(e.message); }
+}
 async function doLogin(){
   const email=document.getElementById('li-email').value.trim().toLowerCase(), pass=document.getElementById('li-pass').value;
+  if(AUTH_URL){
+    try{
+      const hash=await sha(pass);
+      const d=await authApi('login', { email, hash });
+      session={ email, role:d.role, name:d.name, hash }; save(LS.session, session);
+      enterApp();
+    }catch(e){ authErr(e.message); }
+    return;
+  }
   const u=users.find(x=>x.email===email);
   if(!u || u.hash!==await sha(pass)) return authErr('Wrong email or password.');
   if(!u.approved) return authErr('Account pending Admin approval.');
@@ -1018,7 +1064,25 @@ VIEWS['admin.overview']=()=>{
   </div>`);
 };
 VIEWS['admin.team']=()=>{
-  setHead('Team','Approve members & manage roles','');
+  setHead('Team','Verified members & role management','');
+  if(AUTH_URL){
+    C('<div class="card"><div class="empty"><div class="ei">⏳</div><div class="et">Loading team…</div></div></div>');
+    authApi('users',{ email:session.email, hash:session.hash }).then(d=>{
+      if(curView!=='team') return;
+      C(`<div class="card" style="padding:6px 16px"><table class="tbl"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th></th></tr></thead><tbody>
+        ${d.users.map(u=>`<tr>
+          <td style="font-weight:700">${esc(u.name)}</td><td class="hint">${esc(u.email)}</td>
+          <td><select style="width:auto;padding:5px 9px;font-size:12px" onchange="teamSet('${esc(u.email)}',{role:this.value})" ${u.email===session.email?'disabled':''}>
+            ${['admin','recruiter','marketing'].map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${r[0].toUpperCase()+r.slice(1)}</option>`).join('')}</select></td>
+          <td>${u.verified?'<span class="tag tag-green">Verified</span>':'<span class="tag tag-amber">Pending email code</span>'}</td>
+          <td class="hint">${fmtDate(u.created)}</td>
+          <td style="text-align:right">${u.email!==session.email?`<button class="btn btn-danger btn-sm" onclick="if(confirm('Remove ${esc(u.name)}?'))teamSet('${esc(u.email)}',{del:true})">🗑</button>`:''}</td>
+        </tr>`).join('')||'<tr><td colspan="6" class="hint" style="text-align:center;padding:20px">No members yet</td></tr>'}
+      </tbody></table></div>
+      <div class="hint" style="margin-top:12px">💡 Teammates sign up at scoutx.nhrms.com with a company email — a code from krishna@nhrms.com verifies them automatically. Only verified members can sign in.</div>`);
+    }).catch(e=>{ C(`<div class="card"><div class="empty"><div class="ei">⚠️</div><div class="et">${esc(e.message)}</div></div></div>`); });
+    return;
+  }
   C(`<div class="card" style="padding:6px 16px"><table class="tbl"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>
     ${users.map((u,i)=>`<tr>
       <td style="font-weight:700">${esc(u.name)}</td><td class="hint">${esc(u.email)}</td>
@@ -1032,6 +1096,10 @@ VIEWS['admin.team']=()=>{
   </tbody></table></div>
   <div class="hint" style="margin-top:12px">💡 Team members create their own account from the login screen ("Create account") — they appear here as Pending until you approve.</div>`);
 };
+async function teamSet(target, changes){
+  try{ await authApi('setuser', { email:session.email, hash:session.hash, target, ...changes }); toast('Updated ✅','ok'); nav('team'); }
+  catch(e){ toast(e.message,'err'); }
+}
 VIEWS['admin.masteranalytics']=()=>{
   setHead('Master Analytics','Combined view across recruit + marketing','');
   const rSent=R.candidates.filter(c=>c.waSent).length;
@@ -1157,6 +1225,11 @@ async function syncNow(kind){
       save(LS.cfg,cfg);
     }
   }catch(e){ console.warn('migration', e); }
+  if(AUTH_URL){
+    if(session && session.hash) enterApp();
+    else authMode('login');
+    return;
+  }
   if(!users.length){ authMode('setup'); return; }
   if(session && users.find(u=>u.email===session.email&&u.approved)) enterApp();
   else authMode('login');
